@@ -1,0 +1,15 @@
+{% extends 'blogHome.html' %}
+
+
+{% block centerTitle %}
+    {{ typeName }}分类下共有{{ blogs|length }}篇博客</h3>
+{% endblock %}
+
+{% block CenterBody %}
+{% for item in per_page_detailItems %}
+    <h3><a href="/blog/{{ item.id }}">{{ item.title }}</a></h3>
+    <p class="blogInfo">作者:{{ item.author }}&nbsp;&nbsp;分类:{{ item.blogType }}&nbsp;&nbsp;发表时间:{{ item.createTime }}&nbsp;&nbsp;阅读({{ item.get_read_num }})</p>
+    <hr>
+{% endfor %}
+{% endblock %}
+

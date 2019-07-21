@@ -1,0 +1,56 @@
+{% extends 'blogHome.html' %}
+
+{% block largeBody %}
+    <div class="containter">
+        <div class="row" style="margin-top: 65px">
+            <div class="col-md-4">
+                <div class="panel panel-danger">
+                  <div class="panel-heading">Demo指令说明</div>
+                  <div class="panel-body">
+                      <div class="text-danger">Attention：输出指令</div>
+                      <div>&nbsp;&nbsp; &nbsp;&nbsp;1>>>>>>关于小车前进的话</div>
+                      <div>&nbsp;&nbsp; &nbsp;&nbsp;2>>>>>>关于小车后退的话</div>
+                      <div>&nbsp;&nbsp; &nbsp;&nbsp;3>>>>>>关于小车右转的话</div>
+                      <div>&nbsp;&nbsp; &nbsp;&nbsp;4>>>>>>关于小车左转的话</div>
+                      <div>&nbsp;&nbsp; &nbsp;&nbsp;0>>>>>>关于小车停止的话</div>
+                  </div>
+                </div>
+            </div>
+
+            <div class="col-md-4  col-md-offset-1">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title text-center">intel智能音箱语音口令</h3>
+                    </div>
+                    <div class="panel-body">
+{#                        <form action="/intelSmartSpeaker/" method="post" target="commandForm">#}
+{#                            {% csrf_token %}#}
+{#                            <label for="inputCom">口令:(例如：前进、后退、向左等)</label>#}
+{#                            <input id="inputCom" type="text" class="form-control" name="command">#}
+{#                            <input type="submit" value="提交" class="btn btn-primary pull-left">#}
+{#                        </form>#}
+{#                        <iframe name="commandForm" style="display: none"></iframe>#}
+                        <label for="starttime" class="col-md-6 text-center">语音内容</label>
+                        <label for="endtime" class="col-md-6 text-center">输出指令(单个字母/数字)</label>
+                        <form class="form-group" action="/intelSmartSpeaker/" method="post">
+                            {% csrf_token %}
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" id="starttime" name="command1" minlength="1" maxlength="6"/>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" id="endtime" name="output1" minlength="1" maxlength="1" onkeyup="value=value.replace(/[\W]/g,'')"/>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" id="starttime" name="command2"/>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" id="endtime" name="output2" minlength="1" maxlength="1" onkeyup="value=value.replace(/[\W]/g,'')"/>
+                            </div>
+                            <input type="submit" value="提交" class="btn btn-primary pull-left" onclick="javascript:alert('提交成功')">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

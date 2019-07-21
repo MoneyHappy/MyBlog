@@ -1,0 +1,143 @@
+{% extends 'blogHome.html' %}
+
+{% block css %}
+    <link rel="stylesheet" href="/static/SyntaxHighlighter/shCoreDefault.css">
+    <link rel="stylesheet" href="/static/css/blogDetail.css">
+{% endblock %}
+
+{% block colLength %}
+    class="col-md-10"
+{% endblock %}
+
+{% block centerTitle %}
+    欢迎阅读
+{% endblock %}
+
+{% block CenterBody %}
+    {% for item in blogs %}
+        <h3 id="title-center">{{ item.title }}</h3>
+        <p class="blogInfo" id="blogInfo-center">作者:{{ item.author }}&nbsp;&nbsp;分类:{{ item.blogType }}&nbsp;&nbsp;发表时间:{{ item.createTime }}&nbsp;&nbsp;阅读({{ item.get_read_num }})</p>
+        <p class="blogContent">{{ item.content|safe }}</p>
+        {% if pre_blog %}
+            <div class="blogInfo"><a href="/blog/{{ pre_blog.id }}">上一篇：{{ pre_blog.title }}</a></div>
+        {% else %}
+            <div class="blogInfo"><a href="#">上一篇：没有了</a></div>
+        {% endif %}
+        {% if next_blog %}
+            <div class="blogInfo"><a href="/blog/{{ next_blog.id }}">下一篇：{{ next_blog.title }}</a></div>
+        {% else %}
+            <div class="blogInfo"><a href="#">下一篇：没有了</a></div>
+        {% endif %}
+        <p class="blogInfo updateTime">博客最后更新时间：{{ item.updateTime }}</p>
+    {% endfor %}
+    <hr>
+    {% block paginations %}
+    {% endblock %}
+{% endblock %}
+
+{% block comment-area %}
+    <h4>评论列表:</h4>
+    {% for item in comments %}
+        <div class="panel panel-info">
+            <div class="panel-heading">
+               # {{ item.comment_user }} ({{ item.comment_time|date:"Y-m-d H:i" }}):
+                {% if item.comment_user == user %}
+                    <form id="removeFormID-{{ item.id }}" method="post" style="position:absolute;">
+                        {% csrf_token %}
+                        <input type="hidden" name="commentID" value="{{ item.id }}">
+                    </form>
+                    <a id="removeCommentID-{{ item.id }}" onclick="removeFunction({{ item.id }})"
+                       class="text-danger pull-right" style="cursor: pointer">删除</a>
+                {% endif %}
+            </div>
+            <div class="panel-body">
+                {{ item.comment_text|safe }}
+            </div>
+        </div>
+    {% empty %}
+        <div id="confirmNotComment">暂无评论，欢迎您评论</div>
+    {% endfor %}
+    {# ajax提交评论 #}
+    <div id="ajax-comment"></div>
+
+    {% if user.is_authenticated %}
+        <form id="comment-form" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="comment_text">{{ user }}，您已登录成功，欢迎评论</label>
+                <script id="container" name="comment_text" type="text/plain"></script>
+            </div>
+            <input type="hidden" name="object_id" value="{{ blogs.0.id }}">
+            <input type="hidden" name="content_type" value="blog">
+            <input type="submit" value="提交评论" class="btn btn-primary">
+        </form>
+    {% else %}
+        注册用户登录后才能发表评论,请
+        <a href="/login/?from={{ request.get_full_path }}">登录</a>或者
+        <a href="/register/?from={{ request.get_full_path }}">注册</a>
+    {% endif %}
+{% endblock %}
+
+{% block RightSide %}   {% endblock %}
+
+{% block js %}
+    <script src="/static/SyntaxHighlighter/shCore.js"></script>
+    <script src="/static/js/ueditor.parse.js"></script>
+    <!-- 配置文件 -->
+    <script type="text/javascript" src="/static/UEditor-utf8-php/ueditor.config.js"></script>
+    <!-- 编辑器源码文件 -->
+    <script type="text/javascript" src="/static/UEditor-utf8-php/ueditor.all.js"></script>
+    <!-- 实例化编辑器 -->
+    <script type="text/javascript">
+        var editor = UE.getEditor('container');
+        SyntaxHighlighter.all();
+        //添加评论
+        $('#comment-form').submit(function () {
+            $.ajax({
+                url: '/comment/submitComment/',
+                type: 'POST',
+                data: $(this).serialize(),
+                cache: false,
+                success: function (data) {
+                    data1 = JSON.parse(data);
+                    if (data1['status'] !== 0) {
+                        $('#ajax-comment').append("<div class=\"panel panel-info\">" +
+                            "<div class=\"panel-heading\">" + data1['comment_user'] + " (" + data1['comment_time'] + "):" +
+                            "<form id=\"removeFormID-" + data1['commentID'] + "\"  method=\"post\" style=\"position:absolute;\">\n" +
+                            "                        {% csrf_token %}\n" +
+                            "                        <input type=\"hidden\" name=\"commentID\" value=\"" + data1['commentID'] + "\">\n" +
+                            "                    </form>\n" +
+                            "                    <a id=\"removeCommentID-" + data1['commentID'] + "\" onclick=\"removeFunction(" + data1['commentID'] + ")\" class=\"text-danger pull-right\" style=\"cursor: pointer\">删除</a>"
+                            + "</div>"
+                            + "<div class=\"panel-body\">" + data1['comment_text'] + "</div>"
+                            + "</div>");
+                        $('#confirmNotComment').remove();
+                    }
+                    else {
+                        alert('评论不能为空');
+                    }
+                    editor.execCommand('cleardoc');  //提交后清空编辑器内容
+                },
+            });
+            return false; //去掉页面则会刷新
+        });
+
+        //移除评论和数据库删除评论
+        function removeFunction(idNum) {
+            var r = confirm("确定删除评论!");
+            if (r === true) {
+                $.ajax({
+                    url: '/comment/removeComment/',
+                    type: 'POST',
+                    data: $('#' + 'removeFormID-' + idNum).serialize(),
+                    cache: false,
+                    success: function (arg) {
+
+                    }
+                });
+                $('#' + 'removeCommentID-' + idNum).parent().parent().remove();
+            }
+        }
+
+    </script>
+{% endblock %}

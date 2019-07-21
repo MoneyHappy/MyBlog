@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小欢子大人的博客网站</title>
+    <link rel="icon" href="/static/common_pic/icon.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/blogHome.css">
+    <link rel="stylesheet" href="/static/plugs/bootstrap3.3.7/css/bootstrap.min.css">
+    {# css扩展 #}
+    {% block css %}    {% endblock %}
+    {# css扩展 #}
+
+</head>
+<body>
+
+{# 导航条 #}
+<div class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">小欢子大人的博客网站</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/"><span class="glyphicon glyphicon-home"></span> 首页</a></li>
+                <li><a href="/blog/36"><span class="glyphicon glyphicon-user"></span> 关于</a></li>
+                <li><a href="/smartSpeakerCommand"><span class="glyphicon glyphicon-bullhorn"></span> IntelSmartSpeaker</a></li>
+            </ul>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="搜索功能待完善">
+                    <span><a href="#" class="glyphicon glyphicon-search" aria-hidden="true"></a></span>
+                </div>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% if not user.is_authenticated %}
+                    <li><a href="/login/?from={{ request.get_full_path }}">登录</a></li>
+                    <li><a href="/register/?from={{ request.get_full_path }}">注册</a></li>
+                {% else %}
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button">{{ user.username }} <span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="modal" data-target="#updateUserInfoModal">修改个人信息</a></li>
+                            <li><a href="/logout/?from={{ request.get_full_path }}">退出登录</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{# 导航条 #}
+
+
+{# 修改用户信息模态对话框 #}
+<div class="modal fade" id="updateUserInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close exitRefresh" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title text-center">个人信息</h4>
+            </div>
+            <div class="modal-body">
+                <form id="updateUserInfo-form" method="post" class="form-horizontal">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="inputUsername" class="col-md-3 control-label">修改用户名:</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" name="newUsername" minlength="2" maxlength="15"
+                                   id="inputUsername" value="{{ user.username }}" required>
+                            <p class="text-danger" id="usernameDanger"></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEmail" class="col-md-3 control-label pull-left">修改邮箱:</label>
+                        <div class="col-md-8">
+                            <input type="email" class="form-control" name="newEmail" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$"
+                                   id="inputEmail" value="{{ user.email }}" required>
+                            <p class="text-danger" id="emailDanger"></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-offset-3 col-sm-10">
+                            <input type="submit"  class="btn btn-danger" value="修改">
+                            <input type="button"  class="btn btn-primary exitRefresh" value="退出">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{# 修改用户信息模态对话框 #}
+
+{# 主体内容 #}
+{% block largeBody %}
+    {# 中间幕布 #}
+    <div class="jumbotron">
+        <div class="container">
+            <h2>一名努力修行的研究僧</h2>
+            <h4>静心写自己的原创技术博客文章</h4>
+        </div>
+    </div>
+    {# 中间幕布 #}
+
+
+    {# 左侧边栏+中间主体+右侧边栏 #}
+    <div class="container-fluid">
+        <div class="row">
+            {# 左侧边栏 #}
+            <div class="col-md-2">
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><span class="glyphicon glyphicon-tag"></span> 博客文章分类</div>
+                    <div class="panel-body SideMenu">
+                        <ol start="1">
+                            {% for item in types %}
+                                <li><a href="/blog/type/{{ item.id }}">{{ item.typeName }}</a></li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span> 阅读排行版</div>
+                    <div class="panel-body SideMenu">
+                        <ol start="1">
+                            {% for item in hotBlogs %}
+                                <li>
+                                    <a href="/blog/{{ item.object_id }}">{{ item.content_object }}({{ item.read_num }})</a>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            {# 左侧边栏 #}
+            {# 中间主体 #}
+            <div {% block colLength %}class="col-md-8"{% endblock %}>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <span class="glyphicon glyphicon-book"></span>
+                        {% block centerTitle %}
+                            一共{{ blogs|length }}篇博客(按发表时间)
+                        {% endblock %}
+                    </div>
+                    <div class="panel-body">
+                        {% block CenterBody %}
+                            {% for item in per_page_detailItems %}
+                                <h4><a href="/blog/{{ item.id }}">{{ item.title }}</a></h4>
+                                <p class="blogInfo">
+                                    作者:{{ item.author }}&nbsp;&nbsp;分类:{{ item.blogType }}&nbsp;&nbsp;发表时间:{{ item.createTime }}&nbsp;&nbsp;阅读({{ item.get_read_num }})
+                                </p>
+                                <hr>
+                            {% endfor %}
+                        {% endblock %}
+                        {# 分页器 #}
+                        {% block paginations %}
+                            <nav aria-label="Page navigation" style="text-align: center">
+                                <ul class="pagination">
+                                    {% if current_page == 1 %}
+                                        <li><a>首页</a></li>
+                                    {% else %}
+                                        <li><a href="?p=1">首页</a></li>
+                                    {% endif %}
+                                    {% if current_page_list.has_previous %}
+                                        <li>
+                                            <a href="?p={{ current_page_list.previous_page_number }}"><span>上一页</span></a>
+                                        </li>
+                                    {% else %}
+                                        <li><a>上一页</a></li>
+                                    {% endif %}
+                                    {% for item in show_page_range %}
+                                        {% if current_page == item %}
+                                            <li class="active"><a>{{ item }}</a></li>
+                                        {% else %}
+                                            <li><a href="?p={{ item }}">{{ item }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if current_page_list.has_next %}
+                                        <li>
+                                            <a href="?p={{ current_page_list.next_page_number }}"><span>下一页</span></a>
+                                        </li>
+                                    {% else %}
+                                        <li><a>下一页</a></li>
+                                    {% endif %}
+                                    {% if current_page == num_pages %}
+                                        <li><a>尾页</a></li>
+                                    {% else %}
+                                        <li><a href="?p={{ num_pages }}">尾页</a></li>
+                                    {% endif %}
+                                </ul>
+                                <p>一共{{ num_pages }}页,当前第{{ current_page }}页</p>
+                            </nav>
+                        {% endblock %}
+                        {# 分页器 #}
+                        {% block comment-area %}
+
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+            {# 中间主体 #}
+            {# 右侧边栏 #}
+            {% block RightSide %}
+                <div class="col-md-2">
+                    <div id="container" style="width: 200px;height:200px;"></div>
+                    <script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+                    <script>
+                        // 图表配置
+                        var options = {
+                            chart: {type: 'line'},                          //指定图表的类型，默认是折线图（line）
+                            title: {text: '最近七天阅读数'},                // 标题
+                            xAxis: {
+                                categories: {{ oneWeekDate|safe }}, // x 轴分类
+                                tickmarkPlacement: 'on',
+                                labels: {
+                                    style: {
+                                        fontSize: '8px',
+                                        color: '#337ab7'
+                                    }
+                                }
+                            },
+                            yAxis: {
+                                title: {text: null},               // y 轴标题
+                                labels: {enabled: false}
+                            },
+                            series: [{                              // 数据列
+                                name: '阅读量',                        // 数据列名
+                                data: {{ oneWeek_readNumList}}                    // 数据
+                            }],
+                            plotOptions: {
+                                line: {
+                                    dataLabels: {enabled: true}
+                                }
+                            },
+                            legend: {enabled: false},
+                            credits: {enabled: false}
+                        };
+                        // 图表初始化函数
+                        var chart = Highcharts.chart('container', options);
+                    </script>
+                </div>
+            {% endblock %}
+            {# 右侧边栏 #}
+        </div>
+    </div>
+    {# 左侧边栏+中间主体+右侧边栏 #}
+
+
+    <script src="/static/js/jquery-3.3.1.js"></script>
+    <script src="/static/plugs/bootstrap3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        $('#updateUserInfo-form').submit(function () {
+            $.ajax({
+                    url: '/updateUserInfo/',
+                    type: 'POST',
+                    data: $('#updateUserInfo-form').serialize(),
+                    cache: false,
+                    success: function (arg) {
+                        data = JSON.parse(arg);
+                        console.log(data);
+                        if (data['repUsernameError']) {
+                            $("#usernameDanger").text(data['repUsernameError']).delay(5000).hide(0);
+                        }
+                        if (data['repEmailError']) {
+                            $("#emailDanger").text(data['repEmailError']).delay(5000).hide(0);
+                        }
+                        if (JSON.stringify(data) === '{}') {
+                            window.alert("修改成功");
+                        }
+                    }
+                });
+            return false;
+            });
+        $('.exitRefresh').click(function () {
+            location.reload();
+        });
+    </script>
+
+    {# js扩展 #}
+    {% block js %}  {% endblock %}
+    {# js扩展 #}
+{% endblock %}
+
+</body>
+</html>
